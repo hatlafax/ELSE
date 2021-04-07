@@ -34,7 +34,7 @@
 ;; prefer into the data structures/classes defined below to make their template
 ;; definitions compatible with the core functionality of ELSE.
 ;;
-(require 'cl)
+(require 'cl-lib)
 (require 'eieio)
 (require 'else-lexer)
 

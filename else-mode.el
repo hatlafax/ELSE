@@ -32,7 +32,7 @@
 ;; just type M-x else-mode.
 ;;
 (require 'popup)
-(require 'cl)
+(require 'cl-lib)
 (require 'eieio)
 (require 'else-structs)
 (require 'else-template)

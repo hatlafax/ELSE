@@ -26,6 +26,8 @@
 
 ;;; Code:
 
+(require 'cl-lib)
+
 (defconst else-defining-string
   "^\\s *\\(DELETE\\|DEFINE\\) +\\(TOKEN\\|PLACEHOLDER\\|LANGUAGE\\) +\\(\".*\"\\|\\S-+\\)")
 (defconst else-defining-command 1)
