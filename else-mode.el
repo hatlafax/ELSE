@@ -401,7 +401,7 @@ Clean up syntactically."
      (when else-runtime-error-msg
        (message else-runtime-error-msg)))))
 
-(defun else-expand-or-move-and-expand ()
+(defun else-expand-or-next-expand ()
     "Expand or move to next placeholder and expand."
     (interactive)
     (else-run-when-active
@@ -410,6 +410,17 @@ Clean up syntactically."
                                    (else-expand-abbreviation)))
            (unless entity-details
                (else-next))
+           (else-expand))))
+
+(defun else-expand-or-previous-expand ()
+    "Expand or move to previous placeholder and expand."
+    (interactive)
+    (else-run-when-active
+        (let ((entity-details nil))
+           (setq entity-details (or (else-in-placeholder)
+                                   (else-expand-abbreviation)))
+           (unless entity-details
+               (else-previous))
            (else-expand))))
 
 (defun else-expand-abbreviation ()
