@@ -581,6 +581,26 @@ Point may be several levels of placeholder deep i.e. [as {name}]
                       (pos-visible-in-window-p))
            (goto-char here)))))))
 
+(defun else-kill-or-next-kill ()
+    "Kill or move to next placeholder and kill."
+    (interactive)
+    (else-run-when-active
+        (let ((entity-details nil))
+           (setq entity-details (else-in-placeholder))
+           (unless entity-details
+               (else-next))
+           (else-kill))))
+
+(defun else-kill-or-previous-kill ()
+    "Kill or move to previous placeholder and kill."
+    (interactive)
+    (else-run-when-active
+        (let ((entity-details nil))
+           (setq entity-details (else-in-placeholder))
+           (unless entity-details
+               (else-previous))
+           (else-kill))))
+
 ;;;###autoload
 (define-minor-mode else-mode
   "Toggle ELSE on/off.
