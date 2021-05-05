@@ -373,7 +373,7 @@ Clean up syntactically."
                                :value index :summary summary) menu-list)
         (setq index (1+ index)))
       (setq menu-list (reverse menu-list))
-      (setq selection (popup-menu* menu-list :keymap else-menu-mode-map :isearch t)))
+      (setq selection (popup-menu* menu-list :height 50 :keymap else-menu-mode-map :isearch t)))
     selection))
 
 (defun else-expand ()
