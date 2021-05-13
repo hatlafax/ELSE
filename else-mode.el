@@ -356,9 +356,22 @@ Clean up syntactically."
                                            (- this-pos (line-beginning-position))
                                            entity-details)))))
 
-(defun else-display-menu (possible-matches &optional momentary-only)
-  "Display a list of choices to the user.
-'possible-matches is a list of menu-item's."
+(defun  else-nth-element (element xs)
+  "Return zero-indexed position of ELEMENT in list XS, or nil if absent.
+The list XS is expected to be a list of lists. The head if the inner list
+is tested against the ELEMENT."
+  (let ((idx  0))
+    (catch 'nth-elt
+      (dolist (x  xs)
+        (when (equal element (car x)) (throw 'nth-elt idx))
+        (setq idx  (1+ idx)))
+      nil)))
+
+(defun else-display--popup-menu (possible-matches &optional momentary-only)
+  "Use popup-menu for selection.
+
+Results in the index of selected element.
+"
   (let ((menu-list nil)
         (selection nil)
         (index 0)
@@ -369,12 +382,98 @@ Clean up syntactically."
       (dolist (item possible-matches)
         (setq value (menu-item-text item)
               summary (menu-item-summary item))
-        (push (popup-make-item value
-                               :value index :summary summary) menu-list)
+        (push (popup-make-item value :value index :summary summary) menu-list)
         (setq index (1+ index)))
       (setq menu-list (reverse menu-list))
       (setq selection (popup-menu* menu-list :height 50 :keymap else-menu-mode-map :isearch t)))
     selection))
+
+(defvar else-preselect--ivy-menu nil)
+
+(declare-function ivy-read "ext:ivy.el" t t)
+(declare-function ivy-set-display-transformer "ext:ivy.el" t t)
+(declare-function ivy-configure "ext:ivy.el" t t)
+
+(if (featurep 'ivy)
+    (ivy-configure 'else-display--ivy-menu
+      :display-transformer-fn #'else-display-transformer--ivy-menu
+      )
+)
+
+(defun else-display--ivy-menu (possible-matches &optional momentary-only)
+  "Use ivy-read for selection.
+
+Results in the index of selected element.
+If ivy is not available just use default popup.
+"
+  (if (featurep 'ivy)
+      (let ((menu-list nil)
+            (selection nil)
+            (element nil)
+            (preselect nil)
+            (ivy-height 30)
+            (value nil)
+            (max-len 0)
+            (summary nil))
+        (if momentary-only
+            (popup-tip possible-matches)
+          ;; else
+          (dolist (item possible-matches)
+            (setq value   (menu-item-text    item)
+                  summary (menu-item-summary item))
+            (when (> (length value) max-len)
+              (setq max-len (length value)))
+            ;;(message "text: %s summary: %s" value summary)
+            (push `(,value . ,summary) menu-list)
+          )
+          (setq menu-list (reverse menu-list))
+          (setq element
+                (if (= 1 (length menu-list))
+                    (car (car menu-list))
+                  ;; else
+                  (if (and else-preselect--ivy-menu
+                           (else-nth-element else-preselect--ivy-menu menu-list))
+                      (setq preselect else-preselect--ivy-menu)
+                    ;; else
+                    (setq preselect 0))
+
+                  (defun else-display-transformer--ivy-menu (key)
+                    (with-current-buffer (window-buffer (minibuffer-window))
+                      (let* ((cell (assoc key menu-list))
+                             (val (cdr cell))
+                             (offset (round (* (window-width (minibuffer-window)) 0.3)))
+                             (column (max (+ max-len 10) offset))
+                             (num-spc (- column (length key)))
+                             (filler (make-string num-spc ? ))
+                            )
+                        (if val
+                            (format "%s%s%s" key filler (ivy-append-face val 'ivy-remote))
+                          ;; else
+                          key))))
+
+                  (ivy-read "Select element: " menu-list :require-match t :preselect preselect :caller 'else-display--ivy-menu)
+                ))
+          (setq else-preselect--ivy-menu element)
+          (setq selection  (else-nth-element element menu-list)))
+        selection)
+  ;; else
+  (else-display--popup-menu possible-matches momentary-only)))
+
+(defun else-display-menu (possible-matches &optional momentary-only)
+  "Display a list of choices to the user.
+'possible-matches is a list of menu-item's."
+  (let ((selection nil))
+    (case else-use-menu-framework
+      (else-use-ivy (setq selection (else-display--ivy-menu possible-matches momentary-only)))
+      (else-use-company (message "use company..."))
+      (else-use-popup-menu (setq selection (else-display--popup-menu possible-matches momentary-only)))
+    )
+    selection
+  )
+)
+
+;; (setq else-use-menu-framework 'else-use-popup-menu)
+;;(setq else-use-menu-framework 'else-use-ivy)
 
 (defun else-expand ()
   "Expand the placeholder or any preceeding abbreviation at point."
@@ -781,6 +880,15 @@ window."
 (defcustom else-Alternate-Mode-Names '(("C/l" . "C") ("C++/l" . "C++") ("Java/l" . "Java"))
   "Translate major mode name -> valid (prefix) file name."
   :type '(repeat (cons string string))
+  :group 'ELSE)
+
+(defcustom else-use-menu-framework 'else-use-popup-menu
+  "The menu engine to use for else menu placeholder selection."
+  :type '(choice
+          (const :tag "Use ivy" else-use-ivy)
+          (const :tag "Use company" else-use-company)
+          (const :tag "Use popup menu" else-use-popup-menu)
+         )
   :group 'ELSE)
 
 (provide 'else-mode)
