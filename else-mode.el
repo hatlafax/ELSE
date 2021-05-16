@@ -356,6 +356,7 @@ Clean up syntactically."
                                            (- this-pos (line-beginning-position))
                                            entity-details)))))
 
+
 (defun  else-nth-element (element xs)
   "Return zero-indexed position of ELEMENT in list XS, or nil if absent.
 The list XS is expected to be a list of lists. The head if the inner list
@@ -366,6 +367,10 @@ is tested against the ELEMENT."
         (when (equal element (car x)) (throw 'nth-elt idx))
         (setq idx  (1+ idx)))
       nil)))
+
+;;
+;; Popup-menu
+;;
 
 (defun else-display--popup-menu (possible-matches &optional momentary-only)
   "Use popup-menu for selection.
@@ -388,6 +393,9 @@ Results in the index of selected element.
       (setq selection (popup-menu* menu-list :height 50 :keymap else-menu-mode-map :isearch t)))
     selection))
 
+;;
+;; Ivy
+;;
 (defvar else-preselect--ivy-menu nil)
 
 (declare-function ivy-read "ext:ivy.el" t t)
@@ -459,21 +467,78 @@ If ivy is not available just use default popup.
   ;; else
   (else-display--popup-menu possible-matches momentary-only)))
 
+;;
+;; Completing-read
+;;
+(defun else-display--completing-read-menu (possible-matches &optional momentary-only)
+  "Use the standard completing-read for selection.
+This allows to use any completion framework that advices the completing-read function
+like ivy, helm or selectrum.
+
+Results in the index of selected element.
+
+See also: 'else-use-menu-framework'
+
+Remark: For ivy a preferable function 'else-display--ivy-menu' is provided.
+"
+  (let ((menu-list nil)
+        (selection nil)
+        (element nil)
+        (value nil)
+        (max-len 0)
+        (summary nil))
+    (if momentary-only
+        (popup-tip possible-matches)
+      ;; else
+      (dolist (item possible-matches)
+        (setq value   (menu-item-text    item)
+              summary (menu-item-summary item))
+        (when (> (length value) max-len)
+          (setq max-len (length value)))
+        ;;(message "text: %s summary: %s" value summary)
+        (push `(,value . ,summary) menu-list)
+        )
+      (setq menu-list (reverse menu-list))
+      (setq element
+            (if (= 1 (length menu-list))
+                (car (car menu-list))
+              ;; else
+              (defun else-display-annotation--completing-read-menu (key)
+                (with-current-buffer (window-buffer (minibuffer-window))
+                  (let* ((cell (assoc key menu-list))
+                         (val (cdr cell))
+                         (offset (round (* (window-width (minibuffer-window)) 0.3)))
+                         (column (max (+ max-len 10) offset))
+                         (num-spc (- column (length key)))
+                         (filler (make-string num-spc ? ))
+                         )
+                    (if val
+                        (format "%s%s" filler (ivy-append-face val 'ivy-remote))
+                      ;; else
+                      nil))
+                  ))
+
+              (let ((completion-extra-properties '(:annotation-function else-display-annotation--completing-read-menu)))
+                (completing-read "Select element: " menu-list))))
+              (setq selection  (else-nth-element element menu-list))
+        selection)))
+
+;;
+;; Menu backend dispatcher
+;;
+
 (defun else-display-menu (possible-matches &optional momentary-only)
   "Display a list of choices to the user.
-'possible-matches is a list of menu-item's."
+POSSIBLE-MATCHES is a list of menu-item's."
   (let ((selection nil))
     (case else-use-menu-framework
-      (else-use-ivy (setq selection (else-display--ivy-menu possible-matches momentary-only)))
-      (else-use-company (message "use company..."))
       (else-use-popup-menu (setq selection (else-display--popup-menu possible-matches momentary-only)))
+      (else-use-ivy (setq selection (else-display--ivy-menu possible-matches momentary-only)))
+      (else-use-completing-read (setq selection (else-display--completing-read-menu possible-matches momentary-only)))
     )
     selection
   )
 )
-
-;; (setq else-use-menu-framework 'else-use-popup-menu)
-;;(setq else-use-menu-framework 'else-use-ivy)
 
 (defun else-expand ()
   "Expand the placeholder or any preceeding abbreviation at point."
@@ -883,11 +948,11 @@ window."
   :group 'ELSE)
 
 (defcustom else-use-menu-framework 'else-use-popup-menu
-  "The menu engine to use for else menu placeholder selection."
+  "The menu engine to use for ELSE menu placeholder selection."
   :type '(choice
-          (const :tag "Use ivy" else-use-ivy)
-          (const :tag "Use company" else-use-company)
-          (const :tag "Use popup menu" else-use-popup-menu)
+          (const :tag "Use popup.el menu"        else-use-popup-menu)
+          (const :tag "Use ivy-read menu"        else-use-ivy)
+          (const :tag "Use completing-read menu" else-use-completing-read)
          )
   :group 'ELSE)
 
