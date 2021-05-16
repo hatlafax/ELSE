@@ -26,8 +26,6 @@
 
 ;;; Code:
 
-(require 'cl-lib)
-
 (defconst else-defining-string
   "^\\s *\\(DELETE\\|DEFINE\\) +\\(TOKEN\\|PLACEHOLDER\\|LANGUAGE\\) +\\(\".*\"\\|\\S-+\\)")
 (defconst else-defining-command 1)
@@ -80,6 +78,8 @@
     ("MENU" . menu)
     ("/PLACEHOLDER" . placeholder)
     ("/TOKEN" . token)
+    ("/BEFORE" . before-action)
+    ("/AFTER" . after-action)
     ("/FOLLOW" . follow)
     ("/NOFOLLOW" . nofollow)
     ("/INITIAL_STRING" . initial-string)
