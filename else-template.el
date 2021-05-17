@@ -101,6 +101,11 @@
           (progn
             (indent-to-column indent-column)
             (insert (format "/AFTER=%s" (oref obj :after-action)))
+            (newline)))
+      (if (oref obj :transform-action)
+          (progn
+            (indent-to-column indent-column)
+            (insert (format "/TRANSFORM=%s" (oref obj :transform-action)))
             (newline))))))
 
 (cl-defmethod dump ((obj else-non-terminal-placeholder) tab-size)

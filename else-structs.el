@@ -234,6 +234,8 @@ i.e. since the last time the language was tagged as non-dirty."
                   :initform '())
    (after-action :initarg :after-action ;perform this action after expansion
                  :initform '())
+   (transform-action :initarg :transform-action ;perform this action on insertion
+                 :initform '())
    (insert-text :initarg :insert-text
                 :initform '())
    (file-name :initarg :file-name
@@ -337,6 +339,19 @@ i.e. since the last time the language was tagged as non-dirty."
     (error
      (message "%s" (error-message-string err)))))
 
+(cl-defmethod execute-transform ((obj else-base) str)
+  "If the placeholder has a /TRANSFORM action specified then execute it"
+  (let ((result str))
+    (condition-case err
+        (if (oref obj :transform-action)
+            (setq result (funcall (intern-soft (oref obj :transform-action)) str)))
+      (void-function
+       (message "Symbol's function definition is void: %s"
+                (oref obj :transform-action)))
+      (error
+       (message "%s" (error-message-string err))))
+    result))
+
 (cl-defmethod expand ((obj else-menu-placeholder) insert-column)
    "Expand a MENU type placeholder."
   (let ((insert-position (point))
@@ -377,6 +392,10 @@ i.e. since the last time the language was tagged as non-dirty."
           (store-substring line (match-beginning 0) (make-string (- (match-end 0) (match-beginning 0)) ?\ )))
         (when (eq (compare-strings line 0 2 "\\@" 0 2) t)
           (setq line (substring line 1)))
+
+        (if (oref obj :transform-action)
+            (setq line (funcall (intern-soft (oref obj :transform-action)) line)))
+
         (unless first-line
           (princ (make-string (* tab-size (insert-line-indent current-line)) ?\ ) this-buffer))
         (princ line this-buffer)
@@ -549,6 +568,7 @@ Contains all of the template languages for this edit session.")
         (separator "")
         (before-act nil)
         (after-act nil)
+        (transform-act nil)
         (placeholder-reference nil)
         (type nil)
         (value nil)
@@ -594,6 +614,9 @@ Contains all of the template languages for this edit session.")
         ('after-action
          (setq after-act value))
 
+        ('transform-action
+         (setq transform-act value))
+
         ('type
          (push-back-token the-lexer this-token)
          (cl-case value
@@ -608,6 +631,7 @@ Contains all of the template languages for this edit session.")
                                                   :separator separator
                                                   :before-action before-act
                                                   :after-action after-act
+                                                  :transform-action transform-act
                                                   :file-name definition-file
                                                   :definition-line-number definition-line-no))
             (setq this-placeholder (else-scan-non-terminal-body the-lexer this-placeholder (oref this-language :tab-size))))
@@ -623,6 +647,7 @@ Contains all of the template languages for this edit session.")
                                                   :separator separator
                                                   :before-action before-act
                                                   :after-action after-act
+                                                  :transform-action transform-act
                                                   :file-name definition-file
                                                   :definition-line-number definition-line-no))
             (setq this-placeholder (else-scan-terminal-body the-lexer this-placeholder)))
@@ -638,6 +663,7 @@ Contains all of the template languages for this edit session.")
                                                   :separator separator
                                                   :before-action before-act
                                                   :after-action after-act
+                                                  :transform-action transform-act
                                                   :file-name definition-file
                                                   :definition-line-number definition-line-no))
             (setq this-placeholder (else-scan-menu-body the-lexer this-placeholder)))))
