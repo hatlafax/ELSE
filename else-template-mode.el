@@ -97,9 +97,6 @@ are available:
   ;; Font locking
   (setq font-lock-defaults '(else-template-font-lock-keywords))
 
-  (unless (assoc "ELSE-Template" else-Alternate-Mode-Names)
-    (add-to-list 'else-Alternate-Mode-Names '("ELSE-Template" . "Template")))
-
   (when (fboundp 'else-mode)
     (else-mode 1)))
 
