@@ -931,6 +931,11 @@ Sort them alphabetically and display in a temporary buffer."
   :prefix "else"
   :group 'tools)
 
+(defcustom else-Alternate-Mode-Names '()
+  "Translate major mode name -> valid (prefix) file name."
+  :type '(repeat (cons string string))
+  :group 'ELSE)
+
 (defcustom else-kill-proceed-to-next-placeholder t
   "Should ‘else-kill’ goto next placeholder after a kill(t) or not(nil)."
   :type 'boolean
