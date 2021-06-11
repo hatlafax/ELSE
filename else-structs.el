@@ -269,9 +269,6 @@ i.e. since the last time the language was tagged as non-dirty."
          :initform '()))
   "Menu Placeholder.")
 
-(cl-defgeneric expand (obj insert-column)
-  ())
-
 (cl-defmethod build-menu ((obj else-menu-placeholder))
   "Build a menu list.
   (assoc list of form (menu-item . menu-entry) by following (or
