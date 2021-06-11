@@ -360,6 +360,12 @@ Clean up syntactically."
                                            (- this-pos (line-beginning-position))
                                            entity-details)))))
 
+(defun else-default-display-menu (menu)
+  "This is the 'default' menu selector used by ELSE. It uses the
+  popup package. the user can replace this function using
+  else-alternate-menu-picker in the customisation variables."
+  (popup-menu* menu :keymap else-menu-mode-map))
+
 (defun else-display-menu (possible-matches &optional momentary-only)
   "Display a list of choices to the user.
 'possible-matches is a list of menu-item's."
@@ -377,7 +383,7 @@ Clean up syntactically."
                                :value index :summary summary) menu-list)
         (setq index (1+ index)))
       (setq menu-list (reverse menu-list))
-      (setq selection (popup-menu* menu-list :keymap else-menu-mode-map)))
+      (setq selection (funcall (intern-soft else-alternate-menu-picker) menu-list)))
     selection))
 
 (defun else-expand ()
