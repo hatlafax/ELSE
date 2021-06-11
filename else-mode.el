@@ -731,14 +731,16 @@ window."
   :type 'boolean
   :group 'ELSE)
 
+(defcustom else-menu-linking-default t
+  "Menu linking default is either FOLLOW(t) or NOFOLLOW(nil). The
+attributes /FOLLOW and /NOFOLLOW can be used to specifically
+override this default option."
+  :type 'boolean
+  :group 'ELSE)
+
 (defcustom else-fast-load-directory user-emacs-directory
   "Directory where fast load files (.esl) are stored."
   :type 'string
-  :group 'ELSE)
-
-(defcustom else-Alternate-Mode-Names '(("C/l" . "C") ("C++/l" . "C++") ("Java/l" . "Java"))
-  "Translate major mode name -> valid (prefix) file name."
-  :type '(repeat (cons string string))
   :group 'ELSE)
 
 (provide 'else-mode)
