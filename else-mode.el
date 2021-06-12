@@ -753,6 +753,11 @@ override this default option."
   :type 'string
   :group 'ELSE)
 
+(defcustom else-alternate-menu-picker "else-default-display-menu"
+  "{documentation}"
+  :type 'string
+  :group 'ELSE)
+
 (provide 'else-mode)
 
 ;;; else-mode.el ends here
