@@ -532,7 +532,7 @@ Remark: For ivy a preferable function 'else-display--ivy-menu' is provided.
   "Display a list of choices to the user.
 POSSIBLE-MATCHES is a list of menu-item's."
   (let ((selection nil))
-    (case else-use-menu-framework
+    (cl-case else-use-menu-framework
       (else-use-popup-menu (setq selection (else-display--popup-menu possible-matches momentary-only)))
       (else-use-ivy (setq selection (else-display--ivy-menu possible-matches momentary-only)))
       (else-use-completing-read (setq selection (else-display--completing-read-menu possible-matches momentary-only)))
