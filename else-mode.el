@@ -929,7 +929,11 @@ Sort them alphabetically and display in a temporary buffer."
   :group 'tools)
 
 (defcustom else-Alternate-Mode-Names '()
-  "Translate major mode name -> valid (prefix) file name."
+  "Translate major mode name -> valid (prefix) file name.
+
+Example:
+    (add-to-list 'else-Alternate-Mode-Names '(\"Python\" . \"Python-2.7\"))
+"
   :type '(repeat (cons string string))
   :group 'ELSE)
 
