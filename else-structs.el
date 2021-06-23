@@ -318,22 +318,22 @@ i.e. since the last time the language was tagged as non-dirty."
                  (oref obj :name)
                  " (you can't make a menu from TERMINAL placeholders)")))
 
-(cl-defmethod execute-before ((obj else-base))
+(cl-defmethod execute-before ((obj else-base) before-marker)
   "If the placeholder has a /BEFORE action specified then execute it"
   (condition-case err
       (if (oref obj :before-action)
-          (funcall (intern-soft (oref obj :before-action))))
+          (funcall (intern-soft (oref obj :before-action)) before-marker))
     (void-function
      (message "Symbol's function definition is void: %s"
               (oref obj :before-action)))
     (error
      (message "%s" (error-message-string err)))))
 
-(cl-defmethod execute-after ((obj else-base))
+(cl-defmethod execute-after ((obj else-base) after-marker)
   "If the placeholder has a /AFTER action specified then execute it"
   (condition-case err
       (if (oref obj :after-action)
-          (funcall (intern-soft (oref obj :after-action))))
+          (funcall (intern-soft (oref obj :after-action)) after-marker))
     (void-function
      (message "Symbol's function definition is void: %s"
               (oref obj :after-action)))

@@ -94,6 +94,21 @@ and a list of active substitution regions."
   (origin-markers nil)                  ; pair defining the origin text
   (list-of-markers nil))                ; list of subtitute pairs
 
+(cl-defstruct placeholder-marker
+    "Pair of markers that embrace a placeholder."
+    (m1 (make-marker))
+    (m2 (make-marker))
+)
+
+(defun else-create-placeholder-marker (p1 p2)
+  "Create a placeholder-marker object from positions p1 and p2."
+  (let ((m (make-placeholder-marker)))
+    (set-marker (placeholder-marker-m1 m) p1 (current-buffer))
+    (set-marker (placeholder-marker-m2 m) p2 (current-buffer))
+    (set-marker-insertion-type (placeholder-marker-m1 m) t)
+    (set-marker-insertion-type (placeholder-marker-m2 m) t)
+    m))
+
 (defvar else-Auto-Sub-Markers (make-auto-sub)
   "Used in the Auto-Substitution process.")
 
@@ -549,7 +564,9 @@ POSSIBLE-MATCHES is a list of menu-item's."
         (insert-position nil)
         (entity-details nil)
         (pos-after-insert nil)
-        (else-runtime-error-msg nil))
+        (else-runtime-error-msg nil)
+        (ph-marker nil)
+       )
     (else-run-when-active
      (setq else-runtime-error-msg
            (catch 'else-runtime-error
@@ -557,12 +574,14 @@ POSSIBLE-MATCHES is a list of menu-item's."
                                       (else-expand-abbreviation)))
              (when entity-details
                (setq insert-position (1- (p-struct-start entity-details)))
+               (setq ph-marker (else-create-placeholder-marker (p-struct-start entity-details) (p-struct-end entity-details)))
                (save-excursion
-                 (execute-before (p-struct-definition entity-details)))
+                 (execute-before (p-struct-definition entity-details) (placeholder-marker-m1 ph-marker)))
+               (set-marker-insertion-type (placeholder-marker-m1 ph-marker) nil)
                (expand (p-struct-definition entity-details) (p-struct-column-start-position entity-details))
                (save-excursion
-                 (execute-after (p-struct-definition entity-details)))
-               (setq pos-after-insert (point))
+                 (execute-after (p-struct-definition entity-details) (placeholder-marker-m2 ph-marker))
+                 (setq pos-after-insert (point)))
                (goto-char insert-position)
                (unless (else-next 1 :leave-window nil)
                  (goto-char pos-after-insert)))
