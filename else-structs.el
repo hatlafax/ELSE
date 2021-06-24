@@ -282,7 +282,8 @@ i.e. since the last time the language was tagged as non-dirty."
     (dolist (item (oref obj :menu))
       (if (and (menu-entry-type item) (eq
                                        (if (eq (menu-entry-follow item) 'follow-not-specified)
-                                           (if else-menu-linking-default 'follow 'nofollow))
+                                           (if else-menu-linking-default 'follow 'nofollow)
+                                         (menu-entry-follow item))
                                        'follow))
           (progn
             (setq this-list (build-menu (lookup this-language (menu-entry-text item))))
