@@ -278,7 +278,8 @@ i.e. since the last time the language was tagged as non-dirty."
   (let ((definition nil)
         (menu-list nil)
         (this-list nil)
-        (this-language (access-language else-Language-Repository (oref obj :language-name))))
+        (this-language (access-language else-Language-Repository (oref obj :language-name)))
+        (this-placeholder-ref nil))
     (dolist (item (oref obj :menu))
       (if (and (menu-entry-type item) (eq
                                        (if (eq (menu-entry-follow item) 'follow-not-specified)
@@ -286,12 +287,17 @@ i.e. since the last time the language was tagged as non-dirty."
                                          (menu-entry-follow item))
                                        'follow))
           (progn
-            (setq this-list (build-menu (lookup this-language (menu-entry-text item))))
-            (if this-list
-                (setq menu-list (append menu-list this-list))
-              (setq menu-list (append menu-list (list (cons (make-menu-item :text (menu-entry-text item)
-                                                                            :summary (menu-entry-description item))
-                                                            item))))))
+            ;; Add this step because sometimes a menu item may not exist (if the
+            ;; language hasn't been fully defined or a mistake made).
+            (setq this-placeholder-ref (lookup this-language (menu-entry-text item)))
+            (if (null this-placeholder-ref)
+                (message "A placeholder definition for %s does not exist" (menu-entry-text item))
+              (setq this-list (build-menu this-placeholder-ref))
+              (if this-list
+                  (setq menu-list (append menu-list this-list))
+                (setq menu-list (append menu-list (list (cons (make-menu-item :text (menu-entry-text item)
+                                                                              :summary (menu-entry-description item))
+                                                              item)))))))
         (setq menu-list (append menu-list (list (cons (make-menu-item :text (menu-entry-text item)
                                                                       :summary (menu-entry-description item))
                                                       item))))))
