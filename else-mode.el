@@ -376,26 +376,15 @@ Clean up syntactically."
                                            entity-details)))))
 
 
-(defun  else-nth-element (element xs)
-  "Return zero-indexed position of ELEMENT in list XS, or nil if absent.
-The list XS is expected to be a list of lists. The head if the inner list
-is tested against the ELEMENT."
-  (let ((idx  0))
-    (catch 'nth-elt
-      (dolist (x  xs)
-        (when (equal element (car x)) (throw 'nth-elt idx))
-        (setq idx  (1+ idx)))
-      nil)))
+(defun else-default-display-menu (menu)
+  "This is the 'default' menu selector used by ELSE. It uses the
+  popup package. the user can replace this function using
+  else-alternate-menu-picker in the customisation variables."
+  (popup-menu* menu :keymap else-menu-mode-map))
 
-;;
-;; Popup-menu
-;;
-
-(defun else-display--popup-menu (possible-matches &optional momentary-only)
-  "Use popup-menu for selection.
-
-Results in the index of selected element.
-"
+(defun else-display-menu (possible-matches &optional momentary-only)
+  "Display a list of choices to the user.
+'possible-matches is a list of menu-item's."
   (let ((menu-list nil)
         (selection nil)
         (index 0)
@@ -406,155 +395,19 @@ Results in the index of selected element.
       (dolist (item possible-matches)
         (setq value (menu-item-text item)
               summary (menu-item-summary item))
-        (push (popup-make-item value :value index :summary summary) menu-list)
+        (push (popup-make-item value
+                               :value index :summary summary) menu-list)
         (setq index (1+ index)))
       (setq menu-list (reverse menu-list))
-      (setq selection (popup-menu* menu-list :height 50 :keymap else-menu-mode-map :isearch t)))
+      (setq selection (else-disp-menu-pick menu-list)))
     selection))
 
-;;
-;; Ivy
-;;
-(defvar else-preselect--ivy-menu nil)
+(defun else-disp-menu-pick (menu)
+  "Display the list (menu) of possible choices and return the
+   selected item. This defun provides a single point where the
+   alternate-menu-picker variable can be accessed."
+  (funcall (intern-soft else-alternate-menu-picker) menu))
 
-(declare-function ivy-read "ext:ivy.el" t t)
-(declare-function ivy-set-display-transformer "ext:ivy.el" t t)
-(declare-function ivy-configure "ext:ivy.el" t t)
-
-(if (featurep 'ivy)
-    (ivy-configure 'else-display--ivy-menu
-      :display-transformer-fn #'else-display-transformer--ivy-menu
-      )
-)
-
-(defun else-display--ivy-menu (possible-matches &optional momentary-only)
-  "Use ivy-read for selection.
-
-Results in the index of selected element.
-If ivy is not available just use default popup.
-"
-  (if (featurep 'ivy)
-      (let ((menu-list nil)
-            (selection nil)
-            (element nil)
-            (preselect nil)
-            (value nil)
-            (max-len 0)
-            (summary nil))
-        (if momentary-only
-            (popup-tip possible-matches)
-          ;; else
-          (dolist (item possible-matches)
-            (setq value   (menu-item-text    item)
-                  summary (menu-item-summary item))
-            (when (> (length value) max-len)
-              (setq max-len (length value)))
-            (push `(,value . ,summary) menu-list)
-          )
-          (setq menu-list (reverse menu-list))
-          (setq element
-                (if (= 1 (length menu-list))
-                    (car (car menu-list))
-                  ;; else
-                  (if (and else-preselect--ivy-menu
-                           (else-nth-element else-preselect--ivy-menu menu-list))
-                      (setq preselect else-preselect--ivy-menu)
-                    ;; else
-                    (setq preselect 0))
-
-                  (defun else-display-transformer--ivy-menu (key)
-                    (with-current-buffer (window-buffer (minibuffer-window))
-                      (let* ((cell (assoc key menu-list))
-                             (val (cdr cell))
-                             (offset (round (* (window-width (minibuffer-window)) 0.3)))
-                             (column (max (+ max-len 10) offset))
-                             (num-spc (- column (length key)))
-                             (filler (make-string num-spc ? ))
-                            )
-                        (if val
-                            (format "%s%s%s" key filler (ivy-append-face val 'ivy-remote))
-                          ;; else
-                          key))))
-
-                  (ivy-read "Select element: " menu-list :require-match t :preselect preselect :caller 'else-display--ivy-menu)
-                ))
-          (setq else-preselect--ivy-menu element)
-          (setq selection  (else-nth-element element menu-list)))
-        selection)
-  ;; else
-  (else-display--popup-menu possible-matches momentary-only)))
-
-;;
-;; Completing-read
-;;
-(defun else-display--completing-read-menu (possible-matches &optional momentary-only)
-  "Use the standard completing-read for selection.
-This allows to use any completion framework that advices the completing-read function
-like ivy, helm or selectrum.
-
-Results in the index of selected element.
-
-See also: 'else-use-menu-framework'
-
-Remark: For ivy a preferable function 'else-display--ivy-menu' is provided.
-"
-  (let ((menu-list nil)
-        (selection nil)
-        (element nil)
-        (value nil)
-        (max-len 0)
-        (summary nil))
-    (if momentary-only
-        (popup-tip possible-matches)
-      ;; else
-      (dolist (item possible-matches)
-        (setq value   (menu-item-text    item)
-              summary (menu-item-summary item))
-        (when (> (length value) max-len)
-          (setq max-len (length value)))
-        (push `(,value . ,summary) menu-list)
-        )
-      (setq menu-list (reverse menu-list))
-      (setq element
-            (if (= 1 (length menu-list))
-                (car (car menu-list))
-              ;; else
-              (defun else-display-annotation--completing-read-menu (key)
-                (with-current-buffer (window-buffer (minibuffer-window))
-                  (let* ((cell (assoc key menu-list))
-                         (val (cdr cell))
-                         (offset (round (* (window-width (minibuffer-window)) 0.3)))
-                         (column (max (+ max-len 10) offset))
-                         (num-spc (- column (length key)))
-                         (filler (make-string num-spc ? ))
-                         )
-                    (if val
-                        (format "%s%s" filler (ivy-append-face val 'ivy-remote))
-                      ;; else
-                      nil))
-                  ))
-
-              (let ((completion-extra-properties '(:annotation-function else-display-annotation--completing-read-menu)))
-                (completing-read "Select element: " menu-list))))
-              (setq selection  (else-nth-element element menu-list))
-        selection)))
-
-;;
-;; Menu backend dispatcher
-;;
-
-(defun else-display-menu (possible-matches &optional momentary-only)
-  "Display a list of choices to the user.
-POSSIBLE-MATCHES is a list of menu-item's."
-  (let ((selection nil))
-    (cl-case else-use-menu-framework
-      (else-use-popup-menu (setq selection (else-display--popup-menu possible-matches momentary-only)))
-      (else-use-ivy (setq selection (else-display--ivy-menu possible-matches momentary-only)))
-      (else-use-completing-read (setq selection (else-display--completing-read-menu possible-matches momentary-only)))
-    )
-    selection
-  )
-)
 
 (defun else-expand ()
   "Expand the placeholder or any preceeding abbreviation at point."
@@ -982,13 +835,9 @@ override this default option."
   :type 'string
   :group 'ELSE)
 
-(defcustom else-use-menu-framework 'else-use-popup-menu
-  "The menu engine to use for ELSE menu placeholder selection."
-  :type '(choice
-          (const :tag "Use popup.el menu"        else-use-popup-menu)
-          (const :tag "Use ivy-read menu"        else-use-ivy)
-          (const :tag "Use completing-read menu" else-use-completing-read)
-         )
+(defcustom else-alternate-menu-picker "else-default-display-menu"
+  "{documentation}"
+  :type 'string
   :group 'ELSE)
 
 (provide 'else-mode)
