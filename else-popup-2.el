@@ -39,13 +39,31 @@
   :type 'integer
   :group 'ELSE)
 
-(defun else-popup-2-isearch-display-menu (menu)
-  "This is the also a'popup' menu selector for ELSE. It uses the
-  :isearch attribute on default. The user can replace this function using
+(defun else-popup-2-display-menu (possible-matches)
+  "This is the 'default' menu selector used by ELSE. It uses the
+  popup package. the user can replace this function using
   else-alternate-menu-picker in the customisation variables."
-  (popup-menu* menu :height else-popup-height :keymap else-menu-mode-map :isearch t))
+  (let ((menu-list nil)
+        (index 0)
+        (value nil)
+        (summary nil))
 
-(setq else-alternate-menu-picker "else-popup-2-isearch-display-menu")
+      (dolist (item possible-matches)
+        (setq value (menu-item-text item)
+              summary (menu-item-summary item))
+        (push (popup-make-item value
+                               :value index :summary summary) menu-list)
+        (setq index (1+ index)))
+      (setq menu-list (reverse menu-list))
+      (popup-menu* menu-list :height else-popup-2-height :keymap else-menu-mode-map :isearch t)))
+
+
+(defun else-use-menu-picker-popup-2 ()
+  "Use the popup-2 menu selector."
+  (interactive)
+  (setq else-alternate-menu-picker "else-popup-2-display-menu"))
+
+(setq else-alternate-menu-picker "else-popup-2-display-menu")
 
 (provide 'else-popup-2)
 

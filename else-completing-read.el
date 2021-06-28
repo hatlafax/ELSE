@@ -1,4 +1,4 @@
-;;; else-ivy.el --- Emacs Language Sensitive Editor (ELSE)
+;;; else-completing-read.el --- Emacs Language Sensitive Editor (ELSE)
 ;;
 ;; Copyright (C) 1997 - 2017 Peter Milliken
 ;;
@@ -32,49 +32,56 @@
 (require 'else-cl)
 (require 'else-mode)
 
-(defun else-completing-read-display-menu (menu)
+(defun else-completing-read-display-menu (possible-matches)
   "This is the 'completing-read' menu selector provided by ELSE. It uses the
   standard completing-read function. The user can replace this function using
   else-alternate-menu-picker in the customisation variables."
-  (if (featurep 'ivy)
-        (let ((selection nil)
-              (element nil)
-              (preselect nil)
-              (value nil)
-              (max-len 0))
+    (let ((menu-list nil)
+          (element nil)
+          (preselect nil)
+          (value nil)
+          (max-len 0)
+          (summary nil)
+         )
 
-            (cl-loop for (key . value) in menu
-                (when (> (length value) max-len)
-                    (setq max-len (length value)))
-            )
+      (dolist (item possible-matches)
+        (setq value   (menu-item-text    item)
+              summary (menu-item-summary item))
+        (when (> (length value) max-len)
+          (setq max-len (length value)))
+        (push `(,value . ,summary) menu-list)
+      )
+      (setq menu-list (reverse menu-list))
 
-            (setq element
-                (if (= 1 (length menu))
-                    (car (car menu))
-                  ;; else
-                  (defun else-display-annotation--completing-read-menu (key)
-                     (with-current-buffer (window-buffer (minibuffer-window))
-                     (let* ((cell (assoc key menu))
-                            (val (cdr cell))
-                            (offset (round (* (window-width (minibuffer-window)) 0.3)))
-                            (column (max (+ max-len 10) offset))
-                            (num-spc (- column (length key)))
-                            (filler (make-string num-spc ? ))
-                           )
-                        (if val
-                            (format "%s%s" filler (ivy-append-face val 'ivy-remote))
-                          ;; else
-                          nil))
-                    ))
+      (setq element
+            (if (= 1 (length menu-list))
+                (car (car menu-list))
+              ;; else
+              (defun else-display-annotation--completing-read-menu (key)
+                 (with-current-buffer (window-buffer (minibuffer-window))
+                 (let* ((cell (assoc key menu-list))
+                        (val (cdr cell))
+                        (offset (round (* (window-width (minibuffer-window)) 0.3)))
+                        (column (max (+ max-len 10) offset))
+                        (num-spc (- column (length key)))
+                        (filler (make-string num-spc ? ))
+                       )
+                    (if val
+                        (format "%s%s" filler val)
+                      ;; else
+                      nil))
+                ))
 
-                  (let ((completion-extra-properties '(:annotation-function else-display-annotation--completing-read-menu)))
-                      (completing-read "Select element: " menu))))
-            (setq selection  (else-nth-element element menu))
-            selection
-        )
-      ;;else
-      (throw 'else-runtime-error "ivy package is not available!")
-  ))
+              (let ((completion-extra-properties '(:annotation-function else-display-annotation--completing-read-menu)))
+                  (completing-read "Select element: " menu-list))))
+        (else-nth-element element menu-list)
+    )
+  )
+
+(defun else-use-menu-picker-completing-read ()
+  "Use the completing read menu selector."
+  (interactive)
+  (setq else-alternate-menu-picker "else-completing-read-display-menu"))
 
 (setq else-alternate-menu-picker "else-completing-read-display-menu")
 

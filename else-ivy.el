@@ -44,35 +44,39 @@
       )
 )
 
-(defun else-ivy-display-menu (menu)
+(defun else-ivy-display-menu (possible-matches)
   "This is the 'ivy' menu selector provided by ELSE. It uses the
   ivy package. The user can replace this function using
   else-alternate-menu-picker in the customisation variables."
   (if (featurep 'ivy)
-        (let ((selection nil)
+        (let ((menu-list)
               (element nil)
               (preselect nil)
               (value nil)
               (max-len 0))
 
-            (cl-loop for (key . value) in menu
-                (when (> (length value) max-len)
-                    (setq max-len (length value)))
-            )
+          (dolist (item possible-matches)
+            (setq value   (menu-item-text    item)
+                  summary (menu-item-summary item))
+            (when (> (length value) max-len)
+              (setq max-len (length value)))
+            (push `(,value . ,summary) menu-list)
+          )
+          (setq menu-list (reverse menu-list))
 
-            (setq element
-                (if (= 1 (length menu))
-                    (car (car menu))
+          (setq element
+                (if (= 1 (length menu-list))
+                    (car (car menu-list))
                   ;; else
                   (if (and else-preselect--ivy-menu
-                           (else-nth-element else-preselect--ivy-menu menu))
+                           (else-nth-element else-preselect--ivy-menu menu-list))
                       (setq preselect else-preselect--ivy-menu)
                     ;; else
                     (setq preselect 0))
 
                   (defun else-display-transformer--ivy-menu (key)
                     (with-current-buffer (window-buffer (minibuffer-window))
-                      (let* ((cell (assoc key menu))
+                      (let* ((cell (assoc key menu-list))
                              (val (cdr cell))
                              (offset (round (* (window-width (minibuffer-window)) 0.3)))
                              (column (max (+ max-len 10) offset))
@@ -84,15 +88,19 @@
                           ;; else
                           key))))
 
-                  (ivy-read "Select element: " menu :require-match t :preselect preselect :caller 'else-display--ivy-menu)
+                  (ivy-read "Select element: " menu-list :require-match t :preselect preselect :caller 'else-display--ivy-menu)
                 ))
             (setq else-preselect--ivy-menu element)
-            (setq selection  (else-nth-element element menu))
-            selection
+            (else-nth-element element menu-list)
         )
       ;;else
       (throw 'else-runtime-error "ivy package is not available!")
   ))
+
+(defun else-use-menu-picker-ivy ()
+  "Use the ivy menu selector."
+  (interactive)
+  (setq else-alternate-menu-picker "else-ivy-display-menu"))
 
 (setq else-alternate-menu-picker "else-ivy-display-menu")
 
