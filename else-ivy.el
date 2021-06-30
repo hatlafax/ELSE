@@ -44,7 +44,7 @@
       )
 )
 
-(defun else-ivy-display-menu (possible-matches)
+(defun else-ivy-display-menu (placeholders descriptions)
   "This is the 'ivy' menu selector provided by ELSE. It uses the
   ivy package. The user can replace this function using
   else-alternate-menu-picker in the customisation variables."
@@ -53,16 +53,17 @@
               (element nil)
               (preselect nil)
               (value nil)
+              (descr nil)
               (max-len 0))
 
-          (dolist (item possible-matches)
-            (setq value   (menu-item-text    item)
-                  summary (menu-item-summary item))
+          (dotimes (index (length placeholders))
+            (setq value (nth index placeholders))
+            (setq descr (nth index descriptions))
+
             (when (> (length value) max-len)
               (setq max-len (length value)))
-            (push `(,value . ,summary) menu-list)
+            (push `(,value . ,descr) menu-list)
           )
-          (setq menu-list (reverse menu-list))
 
           (setq element
                 (if (= 1 (length menu-list))
@@ -91,7 +92,7 @@
                   (ivy-read "Select element: " menu-list :require-match t :preselect preselect :caller 'else-display--ivy-menu)
                 ))
             (setq else-preselect--ivy-menu element)
-            (else-nth-element element menu-list)
+            element
         )
       ;;else
       (throw 'else-runtime-error "ivy package is not available!")

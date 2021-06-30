@@ -295,11 +295,13 @@ i.e. since the last time the language was tagged as non-dirty."
               (setq this-list (build-menu this-placeholder-ref))
               (if this-list
                   (setq menu-list (append menu-list this-list))
-                (setq menu-list (append menu-list (list (cons (make-menu-item :text (menu-entry-text item)
-                                                                              :summary (menu-entry-description item))
-                                                              item)))))))
+                (setq menu-list (append menu-list
+                                        (list (cons (make-menu-item :text (menu-entry-text item)
+                                                                    :summary (oref this-placeholder-ref :description))
+                                                    item)))))))
+        ;;else
         (setq menu-list (append menu-list (list (cons (make-menu-item :text (menu-entry-text item)
-                                                                      :summary (menu-entry-description item))
+                                                                      :summary (menu-entry-description item)) ;; ??? is this correct?
                                                       item))))))
     menu-list))
 
@@ -369,9 +371,11 @@ i.e. since the last time the language was tagged as non-dirty."
     (setq menu-list (build-menu obj))
     ;; display the keys of the menu-list, return the index'd element (selected)
     ;; and access the menu-entry for expansion.
-    (setq selected-menu-entry (cdr (nth (else-display-menu (cl-loop for entry in menu-list
-                                                                    collect (car entry)))
-                                        menu-list)))
+    (let ((selected-text nil))
+      (setq selected-text (else-display-menu (cl-loop for entry in menu-list collect (car entry))))
+      (dolist (menu-entry menu-list)
+        (if (string= selected-text (menu-item-text (car menu-entry)))
+            (setq selected-menu-entry (cdr menu-entry)))))
     (if (menu-entry-type selected-menu-entry) ; placeholder?
         (expand (lookup else-Current-Language (menu-entry-text selected-menu-entry)) insert-column)
       (insert (menu-entry-text selected-menu-entry))

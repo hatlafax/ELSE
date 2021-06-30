@@ -39,24 +39,31 @@
   :type 'integer
   :group 'ELSE)
 
-(defun else-popup-2-display-menu (possible-matches)
+(defun else-popup-2-display-menu (placeholders descriptions)
   "This is the 'default' menu selector used by ELSE. It uses the
   popup package. the user can replace this function using
   else-alternate-menu-picker in the customisation variables."
-  (let ((menu-list nil)
-        (index 0)
+  (let ((index 0)
+        (menu-list nil)
         (value nil)
-        (summary nil))
+        (descr nil)
+        (smallest-desc-len 25))         ; use a default max length for
+                                        ; descriptions
+    (dotimes (index (length placeholders))
+      (setq value (nth index placeholders))
+      (setq descr (nth index descriptions))
 
-      (dolist (item possible-matches)
-        (setq value (menu-item-text item)
-              summary (menu-item-summary item))
-        (push (popup-make-item value
-                               :value index :summary summary) menu-list)
-        (setq index (1+ index)))
-      (setq menu-list (reverse menu-list))
-      (popup-menu* menu-list :height else-popup-2-height :keymap else-menu-mode-map :isearch t)))
-
+      (let ((desc-len (length descr)))
+        (if (> (length desc-len) smallest-desc-len)
+            (push
+             (popup-make-item value
+                              :summary (substring descr
+                                                  0
+                                                  smallest-desc-len))
+             menu-list)
+          (push (popup-make-item value :summary descr) menu-list))))
+    (setq menu-list (reverse menu-list))
+    (popup-menu* menu-list :height else-popup-2-height :keymap else-menu-mode-map :isearch t)))
 
 (defun else-use-menu-picker-popup-2 ()
   "Use the popup-2 menu selector."

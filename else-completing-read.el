@@ -32,7 +32,7 @@
 (require 'else-cl)
 (require 'else-mode)
 
-(defun else-completing-read-display-menu (possible-matches)
+(defun else-completing-read-display-menu (placeholders descriptions)
   "This is the 'completing-read' menu selector provided by ELSE. It uses the
   standard completing-read function. The user can replace this function using
   else-alternate-menu-picker in the customisation variables."
@@ -40,18 +40,19 @@
           (element nil)
           (preselect nil)
           (value nil)
+          (descr nil)
           (max-len 0)
           (summary nil)
          )
 
-      (dolist (item possible-matches)
-        (setq value   (menu-item-text    item)
-              summary (menu-item-summary item))
+      (dotimes (index (length placeholders))
+        (setq value (nth index placeholders))
+        (setq descr (nth index descriptions))
+
         (when (> (length value) max-len)
           (setq max-len (length value)))
-        (push `(,value . ,summary) menu-list)
+        (push `(,value . ,descr) menu-list)
       )
-      (setq menu-list (reverse menu-list))
 
       (setq element
             (if (= 1 (length menu-list))
@@ -74,7 +75,7 @@
 
               (let ((completion-extra-properties '(:annotation-function else-display-annotation--completing-read-menu)))
                   (completing-read "Select element: " menu-list))))
-        (else-nth-element element menu-list)
+        element
     )
   )
 
