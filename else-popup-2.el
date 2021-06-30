@@ -63,7 +63,6 @@
              menu-list)
           (push (popup-make-item value :summary descr) menu-list))))
 
-    (setq menu-list (reverse menu-list))
     (popup-menu* menu-list :height else-popup-2-height :keymap else-menu-mode-map :isearch t)))
 
 (defun else-use-display-menu-popup-2 ()

@@ -399,7 +399,6 @@ Clean up syntactically."
              menu-list)
           (push (popup-make-item value :summary descr) menu-list))))
 
-    (setq menu-list (reverse menu-list))
     (popup-menu* menu-list :keymap else-menu-mode-map)))
 
 (defun else-display-menu (possible-matches &optional momentary-only)
@@ -418,8 +417,7 @@ Clean up syntactically."
        (dolist (item possible-matches)
          (push (menu-item-text    item) placeholders)
          (push (menu-item-summary item) descriptions))
-       (setq placeholders (reverse placeholders)
-             descriptions (reverse descriptions))
+
        (setq selection (funcall
                         (intern-soft else-alternate-menu-picker)
                         placeholders descriptions)))
