@@ -79,7 +79,7 @@
     )
   )
 
-(defun else-use-menu-picker-completing-read ()
+(defun else-use-display-menu-completing-read ()
   "Use the completing read menu selector."
   (interactive)
   (setq else-alternate-menu-picker "else-completing-read-display-menu"))

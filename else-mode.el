@@ -383,19 +383,19 @@ Clean up syntactically."
         (menu-list nil)
         (value nil)
         (descr nil)
-        (smallest-desc-len 25))         ; use a default max length for
+        (max-desc-len 25))              ; use a default max length for
                                         ; descriptions
     (dotimes (index (length placeholders))
       (setq value (nth index placeholders))
       (setq descr (nth index descriptions))
 
       (let ((desc-len (length descr)))
-        (if (> (length desc-len) smallest-desc-len)
+        (if (>  desc-len max-desc-len)
             (push
              (popup-make-item value
                               :summary (substring descr
                                                   0
-                                                  smallest-desc-len))
+                                                  max-desc-len))
              menu-list)
           (push (popup-make-item value :summary descr) menu-list))))
 
@@ -425,7 +425,7 @@ Clean up syntactically."
                         placeholders descriptions)))
      selection))
 
-(defun else-use-menu-picker-popup ()
+(defun else-use-display-menu-popup ()
   "Use the popup menu selector."
   (interactive)
   (setq else-alternate-menu-picker "else-default-display-menu"))

@@ -47,25 +47,26 @@
         (menu-list nil)
         (value nil)
         (descr nil)
-        (smallest-desc-len 25))         ; use a default max length for
+        (max-desc-len 25))              ; use a default max length for
                                         ; descriptions
     (dotimes (index (length placeholders))
       (setq value (nth index placeholders))
       (setq descr (nth index descriptions))
 
       (let ((desc-len (length descr)))
-        (if (> (length desc-len) smallest-desc-len)
+        (if (>  desc-len max-desc-len)
             (push
              (popup-make-item value
                               :summary (substring descr
                                                   0
-                                                  smallest-desc-len))
+                                                  max-desc-len))
              menu-list)
           (push (popup-make-item value :summary descr) menu-list))))
+
     (setq menu-list (reverse menu-list))
     (popup-menu* menu-list :height else-popup-2-height :keymap else-menu-mode-map :isearch t)))
 
-(defun else-use-menu-picker-popup-2 ()
+(defun else-use-display-menu-popup-2 ()
   "Use the popup-2 menu selector."
   (interactive)
   (setq else-alternate-menu-picker "else-popup-2-display-menu"))
