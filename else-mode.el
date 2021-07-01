@@ -389,17 +389,11 @@ Clean up syntactically."
       (setq value (nth index placeholders))
       (setq descr (nth index descriptions))
 
-      (let ((desc-len (length descr)))
-        (if (>  desc-len max-desc-len)
-            (push
-             (popup-make-item value
-                              :summary (substring descr
-                                                  0
-                                                  max-desc-len))
-             menu-list)
-          (push (popup-make-item value :summary descr) menu-list))))
+      (push (popup-make-item value :summary descr) menu-list))
 
-    (popup-menu* menu-list :keymap else-menu-mode-map)))
+    ; Limit the maximum width to 80% of the window - some DESCRIPTIONs can be
+    ; very long
+    (popup-menu* menu-list :max-width 0.8 :keymap else-menu-mode-map)))
 
 (defun else-display-menu (possible-matches &optional momentary-only)
   "Display a list of choices to the user, 'possible-matches is a

@@ -53,17 +53,11 @@
       (setq value (nth index placeholders))
       (setq descr (nth index descriptions))
 
-      (let ((desc-len (length descr)))
-        (if (>  desc-len max-desc-len)
-            (push
-             (popup-make-item value
-                              :summary (substring descr
-                                                  0
-                                                  max-desc-len))
-             menu-list)
-          (push (popup-make-item value :summary descr) menu-list))))
+      (push (popup-make-item value :summary descr) menu-list))
 
-    (popup-menu* menu-list :height else-popup-2-height :keymap else-menu-mode-map :isearch t)))
+    ; Limit the maximum width to 80% of the window - some DESCRIPTIONs can be
+    ; very long
+    (popup-menu* menu-list :height else-popup-2-height :max-width 0.8 :keymap else-menu-mode-map :isearch t)))
 
 (defun else-use-display-menu-popup-2 ()
   "Use the popup-2 menu selector."
