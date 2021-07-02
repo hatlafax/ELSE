@@ -389,6 +389,7 @@ Clean up syntactically."
       (setq value (nth index placeholders))
       (setq descr (nth index descriptions))
 
+      (setq menu-list (reverse menu-list))
       (push (popup-make-item value :summary descr) menu-list))
 
     ; Limit the maximum width to 80% of the window - some DESCRIPTIONs can be
@@ -411,6 +412,8 @@ Clean up syntactically."
        (dolist (item possible-matches)
          (push (menu-item-text    item) placeholders)
          (push (menu-item-summary item) descriptions))
+       (setq placeholder-list (reverse placeholders)
+             descriptions     (reverse descriptions))
 
        (setq selection (funcall
                         (intern-soft else-alternate-menu-picker)
@@ -454,28 +457,6 @@ Clean up syntactically."
              nil))
      (when else-runtime-error-msg
        (message else-runtime-error-msg)))))
-
-(defun else-expand-or-next-expand ()
-    "Expand or move to next placeholder and expand."
-    (interactive)
-    (else-run-when-active
-        (let ((entity-details nil))
-           (setq entity-details (or (else-in-placeholder)
-                                   (else-expand-abbreviation)))
-           (unless entity-details
-               (else-next))
-           (else-expand))))
-
-(defun else-expand-or-previous-expand ()
-    "Expand or move to previous placeholder and expand."
-    (interactive)
-    (else-run-when-active
-        (let ((entity-details nil))
-           (setq entity-details (or (else-in-placeholder)
-                                   (else-expand-abbreviation)))
-           (unless entity-details
-               (else-previous))
-           (else-expand))))
 
 (defun else-expand-abbreviation ()
   "Expand the abbreviated text at point."
@@ -633,30 +614,6 @@ Point may be several levels of placeholder deep i.e. [as {name}]
          (unless (and else-only-proceed-within-window
                       (pos-visible-in-window-p))
            (goto-char here)))))))
-
-(defun else-kill-or-next-kill ()
-    "Kill or move to next placeholder and kill."
-    (interactive)
-    (else-run-when-active
-        (let ((entity-details nil)
-              (else-kill-proceed-to-next-placeholder nil))
-           (setq entity-details (else-in-placeholder))
-           (unless entity-details
-               (else-next))
-           (else-kill)
-           (else-next))))
-
-(defun else-kill-or-previous-kill ()
-    "Kill or move to previous placeholder and kill."
-    (interactive)
-    (else-run-when-active
-        (let ((entity-details nil)
-              (else-kill-proceed-to-next-placeholder nil))
-           (setq entity-details (else-in-placeholder))
-           (unless entity-details
-               (else-previous))
-           (else-kill)
-           (else-previous))))
 
 (defun else-load-template (&optional language-template-name)
   "Load a template file into the Template library."

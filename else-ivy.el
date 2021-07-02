@@ -65,6 +65,8 @@
             (push `(,value . ,descr) menu-list)
           )
 
+          (setq menu-list (reverse menu-list))
+
           (setq element
                 (if (= 1 (length menu-list))
                     (car (car menu-list))

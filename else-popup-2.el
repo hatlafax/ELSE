@@ -55,6 +55,7 @@
 
       (push (popup-make-item value :summary descr) menu-list))
 
+    (setq menu-list (reverse menu-list))
     ; Limit the maximum width to 80% of the window - some DESCRIPTIONs can be
     ; very long
     (popup-menu* menu-list :height else-popup-2-height :max-width 0.8 :keymap else-menu-mode-map :isearch t)))

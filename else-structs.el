@@ -301,7 +301,7 @@ i.e. since the last time the language was tagged as non-dirty."
                                                     item)))))))
         ;;else
         (setq menu-list (append menu-list (list (cons (make-menu-item :text (menu-entry-text item)
-                                                                      :summary (menu-entry-description item)) ;; ??? is this correct?
+                                                                      :summary (menu-entry-description item))
                                                       item))))))
     menu-list))
 
