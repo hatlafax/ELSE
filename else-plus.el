@@ -31,9 +31,11 @@
 ;;
 ;; Usage:
 ;;      (require 'else-plus)
+;;      (use package 'else-plus :ensure nil :after else-mode)
 ;;      (use package 'else-plus :straight nil :after else-mode)
-;;      (use package 'else-plus :pin manual :after else-mode)
 ;;
+
+(require 'else-mode)
 
 (defun else-expand-or-next-expand ()
     "Expand or move to next placeholder and expand."
