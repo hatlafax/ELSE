@@ -1,12 +1,13 @@
 ;;; else-completing-read.el --- Emacs Language Sensitive Editor (ELSE)
 ;;
-;; Copyright (C) 1997 - 2017 Peter Milliken
+;; Copyright (C) 2021 Johannes Brunen
 ;;
-;; Author: Peter Milliken <peter.milliken@gmail.com>
-;; Version: 2.1.0
-;; Package Requires: ((popup "0.5.3") (emacs "25.1"))
+;; Author: Johannes Brunen <hatlafax@gmx.de>
+;; Version: 1.0.0
+;; Package Requires: ((ELSE "2.1.0") (emacs "25.1"))
 ;; Keywords: language sensitive abbreviation template placeholder
 ;; URL: https://github.com/peter-milliken/ELSE
+;; URL: https://github.com/hatlafax/ELSE
 ;;
 ;; GNU Emacs is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -27,6 +28,11 @@
 ;; This package provides provides an alternative implementation of the
 ;; default else-default-display-menu function. This implemetation uses
 ;; the comleting-read framework for selection.
+;;
+;; Usage:
+;;      (require 'else-completing-read)
+;;      (use package 'else-completing-read :ensure nil :after else-mode)
+;;      (use package 'else-completing-read :straight nil :after else-mode)
 ;;
 (require 'cl-lib)
 (require 'else-cl)

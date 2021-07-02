@@ -1,12 +1,13 @@
 ;;; else-cl.el --- Emacs Language Sensitive Editor (ELSE)
 ;;
-;; Copyright (C) 1997 - 2017 Peter Milliken
+;; Copyright (C) 2021 Johannes Brunen
 ;;
-;; Author: Peter Milliken <peter.milliken@gmail.com>
-;; Version: 2.1.0
-;; Package Requires: ((popup "0.5.3") (emacs "25.1"))
+;; Author: Johannes Brunen <hatlafax@gmx.de>
+;; Version: 1.0.0
+;; Package Requires: ((ELSE "2.1.0") (emacs "25.1"))
 ;; Keywords: language sensitive abbreviation template placeholder
 ;; URL: https://github.com/peter-milliken/ELSE
+;; URL: https://github.com/hatlafax/ELSE
 ;;
 ;; GNU Emacs is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -24,8 +25,8 @@
 ;; Boston, MA 02111-1307, USA.
 ;;
 ;;; Commentary:
-;; This package provides some common functions for the various completion
-;; functions.
+;; This package provides some common private functions for the various
+;; completion functions. It is used internally by ELSE.
 ;;
 
 (defun  else-nth-element (element xs)
