@@ -388,10 +388,8 @@ Clean up syntactically."
     (dotimes (index (length placeholders))
       (setq value (nth index placeholders))
       (setq descr (nth index descriptions))
-
-      (setq menu-list (reverse menu-list))
       (push (popup-make-item value :summary descr) menu-list))
-
+    (setq menu-list (reverse menu-list))
     ; Limit the maximum width to 80% of the window - some DESCRIPTIONs can be
     ; very long
     (popup-menu* menu-list :max-width 0.8 :keymap else-menu-mode-map)))
