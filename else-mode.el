@@ -410,9 +410,8 @@ Clean up syntactically."
        (dolist (item possible-matches)
          (push (menu-item-text    item) placeholders)
          (push (menu-item-summary item) descriptions))
-       (setq placeholder-list (reverse placeholders)
-             descriptions     (reverse descriptions))
-
+       (setq placeholders (reverse placeholders)
+             descriptions (reverse descriptions))
        (setq selection (funcall
                         (intern-soft else-alternate-menu-picker)
                         placeholders descriptions)))
