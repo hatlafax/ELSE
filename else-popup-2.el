@@ -66,11 +66,6 @@
     ; very long
     (popup-menu* menu-list :height else-popup-2-height :max-width 0.8 :keymap else-menu-mode-map :isearch t)))
 
-(defun else-use-display-menu-popup-2 ()
-  "Use the popup-2 menu selector."
-  (interactive)
-  (setq else-alternate-menu-picker "else-popup-2-display-menu"))
-
 (setq else-alternate-menu-picker "else-popup-2-display-menu")
 
 (provide 'else-popup-2)

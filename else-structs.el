@@ -299,7 +299,6 @@ i.e. since the last time the language was tagged as non-dirty."
                                         (list (cons (make-menu-item :text (menu-entry-text item)
                                                                     :summary (oref this-placeholder-ref :description))
                                                     item)))))))
-        ;;else
         (setq menu-list (append menu-list (list (cons (make-menu-item :text (menu-entry-text item)
                                                                       :summary (menu-entry-description item))
                                                       item))))))
@@ -472,63 +471,62 @@ Contains all of the template languages for this edit session.")
 (defun else-compile-buffer (&optional start-at-point-min)
   "Compile the language template definitions from 'point' to the end."
   (interactive "P")
-  (save-excursion
-      (let ((operation nil)
-            (err-msg nil)
-            (op nil)
-            (this-token nil)
-            (previous-value nil)
-            (end-of-buffer (point-max))
-            (the-lexer (make-instance 'lexer))
-            (languages-changed nil)
-            (case-fold-search t))
-        (condition-case err
-            (progn
-              (when start-at-point-min
-                (goto-char (point-min)))
-              (load-buffer the-lexer)
-              (setq this-token (get-token the-lexer))
-              (push-back-token the-lexer this-token)
-              (while (not (eq (token-type this-token) 'end-file))
-                (setq this-token (get-token the-lexer))
-                (cl-case (token-type this-token)
-                  ('define-placeholder
-                    (push-back-token the-lexer this-token)
-                    (setq languages-changed (push (else-define-placeholder the-lexer) languages-changed)))
+  (let ((operation nil)
+        (err-msg nil)
+        (op nil)
+        (this-token nil)
+        (previous-value nil)
+        (end-of-buffer (point-max))
+        (the-lexer (make-instance 'lexer))
+        (languages-changed nil)
+        (case-fold-search t))
+    (condition-case err
+        (progn
+          (when start-at-point-min
+            (goto-char (point-min)))
+          (load-buffer the-lexer)
+          (setq this-token (get-token the-lexer))
+          (push-back-token the-lexer this-token)
+          (while (not (eq (token-type this-token) 'end-file))
+            (setq this-token (get-token the-lexer))
+            (cl-case (token-type this-token)
+              ('define-placeholder
+                (push-back-token the-lexer this-token)
+                (setq languages-changed (push (else-define-placeholder the-lexer) languages-changed)))
 
-                  ('delete-placeholder
-                   (setq previous-value (token-value this-token))
-                   (setq this-token (get-token the-lexer))
-                   (unless (eq (token-type this-token) 'language)
-                     (setq err-msg "Expected a /LANGUAGE statement")
-                     (signal 'else-compile-error (list err-msg (current-buffer))))
-                   (delete-element (access-language else-Language-Repository (token-value this-token)) previous-value)
-                   (setq languages-changed (push (token-value this-token) languages-changed)))
+              ('delete-placeholder
+               (setq previous-value (token-value this-token))
+               (setq this-token (get-token the-lexer))
+               (unless (eq (token-type this-token) 'language)
+                 (setq err-msg "Expected a /LANGUAGE statement")
+                 (signal 'else-compile-error (list err-msg (current-buffer))))
+               (delete-element (access-language else-Language-Repository (token-value this-token)) previous-value)
+               (setq languages-changed (push (token-value this-token) languages-changed)))
 
-                  ('define-language
-                    (push-back-token the-lexer this-token)
-                    (else-define-language the-lexer))
+              ('define-language
+                (push-back-token the-lexer this-token)
+                (else-define-language the-lexer))
 
-                  ('delete-language
-                   (delete-language else-Language-Repository (else-strip-quotes (token-value this-token)))))))
+              ('delete-language
+               (delete-language else-Language-Repository (else-strip-quotes (token-value this-token)))))))
 
-          ((else-compile-error)
-           (if (called-interactively-p 'any)
-               (progn
-                 ;; handle the error here
-                 (message (format "Compile aborted - %s" (nth 1 err)))
-                 (set-buffer (nth 2 err)))
-             ;; otherwise re-throw the error
-             (signal 'else-compile-error (cdr err)))))
-        (when languages-changed
-          (delete-dups languages-changed)
-          (save-current-buffer
-            (dolist (name languages-changed)
-              (dolist (this-buffer (buffer-list))
-                (set-buffer this-buffer)
-                (when (and else-Current-Language
-                           (string= (oref else-Current-Language :name) (upcase name)))
-                  (setq else-Current-Language (access-language else-Language-Repository name))))))))))
+      ((else-compile-error)
+       (if (called-interactively-p 'any)
+           (progn
+             ;; handle the error here
+             (message (format "Compile aborted - %s" (nth 1 err)))
+             (set-buffer (nth 2 err)))
+         ;; otherwise re-throw the error
+         (signal 'else-compile-error (cdr err)))))
+    (when languages-changed
+      (delete-dups languages-changed)
+      (save-current-buffer
+        (dolist (name languages-changed)
+          (dolist (this-buffer (buffer-list))
+            (set-buffer this-buffer)
+            (when (and else-Current-Language
+                       (string= (oref else-Current-Language :name) (upcase name)))
+              (setq else-Current-Language (access-language else-Language-Repository name)))))))))
 
 (defun else-define-language (the-lexer)
   "Parse a language definition."

@@ -225,11 +225,6 @@
     ;; All major mode names end with the string "-mode", we are interested in
     ;; what preceeds that part of the name
     (setq language-name (substring language-name 0 (- (length language-name) (length "-mode"))))
-
-    (when (assoc language-name else-Alternate-Mode-Names)
-      (setq language-name (cdr (assoc language-name else-Alternate-Mode-Names)))
-    )
-
     language-name))
 
 (defun else-load-file-and-compile (language-name language-files)

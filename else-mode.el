@@ -1,6 +1,6 @@
 ;;; else-mode.el --- Emacs Language Sensitive Editor (ELSE)
 ;;
-;; Copyright (C) 1997 - 2017 Peter Milliken
+;; Copyright (C) 1997 - 2017, 2021 Peter Milliken
 ;;
 ;; Author: Peter Milliken <peter.milliken@gmail.com>
 ;; Version: 2.1.0
@@ -36,8 +36,9 @@
 (require 'eieio)
 (require 'else-structs)
 (require 'else-template)
+;; include the menu selection commands so the user doesn't have to.
+(require 'else-select-menu-system)
 
-;;; Code:
 
 (define-error 'else-loading-error "Loading template error")
 (define-error 'else-compile-error "Compile error")
@@ -477,11 +478,6 @@ Clean up syntactically."
                         placeholders descriptions)))
      selection))
 
-(defun else-use-display-menu-popup ()
-  "Use the popup menu selector."
-  (interactive)
-  (setq else-alternate-menu-picker "else-default-display-menu"))
-
 (defun else-expand ()
   "Expand the placeholder or any preceeding abbreviation at point."
   (interactive)
@@ -869,15 +865,6 @@ Sort them alphabetically and display in a temporary buffer."
   :tag "Emacs LSE"
   :prefix "else"
   :group 'tools)
-
-(defcustom else-Alternate-Mode-Names '()
-  "Translate major mode name -> valid (prefix) file name.
-
-Example:
-    (add-to-list 'else-Alternate-Mode-Names '(\"Python\" . \"Python-2.7\"))
-"
-  :type '(repeat (cons string string))
-  :group 'ELSE)
 
 (defcustom else-kill-proceed-to-next-placeholder t
   "Should ‘else-kill’ goto next placeholder after a kill(t) or not(nil)."
