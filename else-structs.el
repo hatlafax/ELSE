@@ -377,7 +377,7 @@ i.e. since the last time the language was tagged as non-dirty."
             (setq selected-menu-entry (cdr menu-entry)))))
     (if (menu-entry-type selected-menu-entry) ; placeholder?
         (expand (lookup else-Current-Language (menu-entry-text selected-menu-entry)) insert-column)
-      (insert (menu-entry-text selected-menu-entry))
+      (insert (else-handle-special-tokens (menu-entry-text selected-menu-entry)))
       (goto-char insert-position))))
 
 (cl-defmethod expand ((obj else-terminal-placeholder) insert-column)
@@ -398,6 +398,9 @@ i.e. since the last time the language was tagged as non-dirty."
         ;; copy the entity because the following hard space conversion will
         ;; modify the original definition in the language instance
         (setq line (substring (insert-line-text current-line) 0))
+
+        (setq line (else-handle-special-tokens line))
+
         ;; convert any "hard spaces" to real spaces i.e. @ -> ' '
         (when (string-match "^@+" line)
           (store-substring line (match-beginning 0) (make-string (- (match-end 0) (match-beginning 0)) ?\ )))
@@ -467,6 +470,14 @@ each other and against the tab-size for the language."
 (defvar else-Language-Repository (make-instance 'else-repository)
   "Instance of a ‘else-repository’.
 Contains all of the template languages for this edit session.")
+
+(defun else-handle-special-tokens (line)
+     "Replace special tokens with verbatim characters."
+     (let ((tab-size (oref else-Current-Language :tab-size)))
+       (setq line (replace-regexp-in-string "\\s-*newline-token\\s-*" "\n" line t 'literal))
+       (setq line (replace-regexp-in-string "\\s-*indentation-token\\s-*" (make-string tab-size ?\ ) line t 'literal))
+       line
+       ))
 
 (defun else-compile-buffer (&optional start-at-point-min)
   "Compile the language template definitions from 'point' to the end."
