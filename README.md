@@ -20,6 +20,13 @@ If there is some other completion package the use would like to use, they need t
 
 2. ELSE v2 now includes an option that was in originally in v1 but was removed in the conversion to v2 due to lack of interest. The user can now specify a Emacs lisp function to be run /BEFORE and /AFTER a placeholder expansion. Useful examples are difficult to show, but several users (of ELSE v1 and now v2) requested the feature, so I have included it (back) into ELSE. If anybody has a really useful example, please let me know via email and I will consider adding it to the user manual!
 
+## About this fork
+This fork essentially resembles the original ELSE implementation found at https://github.com/peter-milliken/ELSE. It contains experimentally features that are neither mature enough for production usage nor is there consensus about the direction these features are heading.
+There is no intention to either supersede the original ELSE package or to generate a better ELSE. Contrary, there is vivid communication with the original ELSE author about the usefulness of changes that can be found here against the original package. The original author is very supportive and any mature and useful change is considered for addition.
+
+### Disclaimer:
+This is experimental work. If you wish to give ELSE a try, please use the original ELSE package found at https://github.com/peter-milliken/ELSE. This is the best you can get!
+
 ## Standard Blurb
 Emacs 26.1: Version 26.1 of Emacs does not write readable Lisp Objects, so the fast load file does not work as described in the manual. Bug-02 fixes this issue by causing ELSE to catch the error thrown by Emacs on the Lisp Object read failure and re-directs ELSE to compile the templates from the original source files instead. This is all transparent to the user.
 
@@ -94,3 +101,4 @@ After supplying and "expression", the user would navigate to the "as {target}" p
      {statement}...
 ```
 Note that ELSE "cleaned up" after the kill command by moving the ":" character hard up against the expression - so there is no extraneous actions required and then moved point automatically to the "{statement}" placeholder.
+
