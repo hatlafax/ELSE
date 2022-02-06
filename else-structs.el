@@ -330,7 +330,7 @@ i.e. since the last time the language was tagged as non-dirty."
   "If the placeholder has a /BEFORE action specified then execute it"
   (condition-case err
       (if (oref obj :before-action)
-          (funcall (intern-soft (oref obj :before-action)) before-marker))
+          (funcall (intern-soft (oref obj :before-action)) before-marker obj))
     (void-function
      (message "Symbol's function definition is void: %s"
               (oref obj :before-action)))
@@ -341,7 +341,7 @@ i.e. since the last time the language was tagged as non-dirty."
   "If the placeholder has a /AFTER action specified then execute it"
   (condition-case err
       (if (oref obj :after-action)
-          (funcall (intern-soft (oref obj :after-action)) after-marker))
+          (funcall (intern-soft (oref obj :after-action)) after-marker obj))
     (void-function
      (message "Symbol's function definition is void: %s"
               (oref obj :after-action)))
