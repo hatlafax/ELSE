@@ -485,7 +485,6 @@ Clean up syntactically."
         (deleted-column nil)
         (insert-position nil)
         (entity-details nil)
-        (pos-after-insert nil)
         (else-runtime-error-msg nil)
         (ph-marker nil)
        )
@@ -496,17 +495,27 @@ Clean up syntactically."
                                       (else-expand-abbreviation)))
              (when entity-details
                (setq insert-position (1- (p-struct-start entity-details)))
+
                (setq ph-marker (else-create-placeholder-marker (p-struct-start entity-details) (p-struct-end entity-details)))
-               (save-excursion
-                 (execute-before (p-struct-definition entity-details) (placeholder-marker-m1 ph-marker)))
-               (set-marker-insertion-type (placeholder-marker-m1 ph-marker) nil)
-               (expand (p-struct-definition entity-details) (p-struct-column-start-position entity-details))
-               (save-excursion
-                 (execute-after (p-struct-definition entity-details) (placeholder-marker-m2 ph-marker))
-                 (setq pos-after-insert (point)))
+
+               (execute-before (p-struct-definition entity-details) (placeholder-marker-m1 ph-marker))
+
+               (expand
+                   (p-struct-definition entity-details)
+                   (p-struct-column-start-position entity-details)
+                   (placeholder-marker-m1 ph-marker)
+                   (placeholder-marker-m2 ph-marker)
+               )
+
+               (execute-after (p-struct-definition entity-details) (placeholder-marker-m2 ph-marker))
+
                (goto-char insert-position)
+
                (unless (else-next 1 :leave-window nil)
-                 (goto-char pos-after-insert)))
+                 (goto-char (marker-position (placeholder-marker-m2 ph-marker)))
+               )
+             )
+
              nil))
      (when else-runtime-error-msg
        (message else-runtime-error-msg)))))

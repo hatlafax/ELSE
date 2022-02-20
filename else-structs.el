@@ -330,7 +330,12 @@ i.e. since the last time the language was tagged as non-dirty."
   "If the placeholder has a /BEFORE action specified then execute it"
   (condition-case err
       (if (oref obj :before-action)
-          (funcall (intern-soft (oref obj :before-action)) before-marker obj))
+          (save-excursion
+            (set-marker-insertion-type before-marker t)
+            (funcall (intern-soft (oref obj :before-action)) before-marker obj)
+            (set-marker-insertion-type before-marker nil)
+          )
+      )
     (void-function
      (message "Symbol's function definition is void: %s"
               (oref obj :before-action)))
@@ -341,7 +346,10 @@ i.e. since the last time the language was tagged as non-dirty."
   "If the placeholder has a /AFTER action specified then execute it"
   (condition-case err
       (if (oref obj :after-action)
-          (funcall (intern-soft (oref obj :after-action)) after-marker obj))
+          (save-excursion
+            (funcall (intern-soft (oref obj :after-action)) after-marker obj)
+          )
+      )
     (void-function
      (message "Symbol's function definition is void: %s"
               (oref obj :after-action)))
@@ -361,8 +369,17 @@ i.e. since the last time the language was tagged as non-dirty."
        (message "%s" (error-message-string err))))
     result))
 
-(cl-defmethod expand ((obj else-menu-placeholder) insert-column)
-   "Expand a MENU type placeholder."
+(cl-defmethod expand ((obj else-menu-placeholder) insert-column before-marker after-marker)
+   "Expand a MENU type placeholder.
+
+BEFORE-MARKER marks the start position of the initial placeholder expanded by else-expand.
+This marker is fixed and does not change.
+
+AFTER-MARKER marks the end position of the initial placeholder expanded by else-expand.
+This marker is not fixed and any buffer insertion operation will be therefore tracked.
+
+These two markers are delivered to any actions to be executed before or after expansion.
+"
   (let ((insert-position (point))
         (menu-list '())
         (selection nil)
@@ -376,17 +393,21 @@ i.e. since the last time the language was tagged as non-dirty."
         (if (string= selected-text (menu-item-text (car menu-entry)))
             (setq selected-menu-entry (cdr menu-entry)))))
     (if (menu-entry-type selected-menu-entry) ; placeholder?
-        (expand (lookup else-Current-Language (menu-entry-text selected-menu-entry)) insert-column)
+        (progn
+          (execute-before (lookup else-Current-Language (menu-entry-text selected-menu-entry)) before-marker)
+          (expand (lookup else-Current-Language (menu-entry-text selected-menu-entry)) insert-column before-marker after-marker)
+          (execute-after (lookup else-Current-Language (menu-entry-text selected-menu-entry)) after-marker)
+        )
       (insert (menu-entry-text selected-menu-entry))
       (goto-char insert-position))))
 
-(cl-defmethod expand ((obj else-terminal-placeholder) insert-column)
+(cl-defmethod expand ((obj else-terminal-placeholder) insert-column before-marker after-marker)
   "Expand a TERMINAL type placeholder"
   (let ((prompt-string nil))
     (else-display-menu (dolist (line (oref obj :prompt) prompt-string)
                          (setq prompt-string (concat prompt-string line "\n"))) t)))
 
-(cl-defmethod expand ((obj else-base) insert-column)
+(cl-defmethod expand ((obj else-base) insert-column before-marker after-marker)
   "Expand the self-insert text of a placeholder."
   (let ((tab-size (oref else-Current-Language :tab-size))
         (first-line t)
