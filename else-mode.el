@@ -98,8 +98,7 @@ and a list of active substitution regions."
 (cl-defstruct placeholder-marker
     "Pair of markers that embrace a placeholder."
     (m1 (make-marker))
-    (m2 (make-marker))
-)
+    (m2 (make-marker)))
 
 (defun else-create-placeholder-marker (p1 p2)
   "Create a placeholder-marker object from positions p1 and p2."
@@ -486,8 +485,7 @@ Clean up syntactically."
         (insert-position nil)
         (entity-details nil)
         (else-runtime-error-msg nil)
-        (ph-marker nil)
-       )
+        (ph-marker nil))
     (else-run-when-active
      (setq else-runtime-error-msg
            (catch 'else-runtime-error
@@ -504,17 +502,14 @@ Clean up syntactically."
                    (p-struct-definition entity-details)
                    (p-struct-column-start-position entity-details)
                    (placeholder-marker-m1 ph-marker)
-                   (placeholder-marker-m2 ph-marker)
-               )
+                   (placeholder-marker-m2 ph-marker))
 
                (execute-after (p-struct-definition entity-details) (placeholder-marker-m2 ph-marker))
 
                (goto-char insert-position)
 
                (unless (else-next 1 :leave-window nil)
-                 (goto-char (marker-position (placeholder-marker-m2 ph-marker)))
-               )
-             )
+                 (goto-char (marker-position (placeholder-marker-m2 ph-marker)))))
 
              nil))
      (when else-runtime-error-msg
@@ -676,6 +671,51 @@ Point may be several levels of placeholder deep i.e. [as {name}]
          (unless (and else-only-proceed-within-window
                       (pos-visible-in-window-p))
            (goto-char here)))))))
+
+(defun else-insert-placeholder (&optional arg)
+  "List all valid placeholders and insert or expand selected one into buffer at point.
+
+If this function is called without a prefix-argument the selected placeholder is immediaately expanded.
+
+If it is called with prefix-argument C-u, the selected placeholder is inserted as '[placeholder]' at
+buffer point and point is moved to the end of the new placeholder.
+
+If it is called with prefix-argument C-u C-u, then '{placeholder}' is inserted into the buffer instead."
+  (interactive "p")
+  (else-run-when-active
+   (let ((all-placeholder-names nil)
+         (matched-placeholder nil)
+         (candidates nil)
+         (menu-list nil))
+     ;; get all of the placeholder names, but filter out any placeholders that
+     ;; are TERMINAL i.e. it is pointless to expand a TERMINAL placeholder (at
+     ;; least as an abbreviation)
+     (setq all-placeholder-names (get-names else-Current-Language))
+     (let ((completion-ignore-case t))
+       (setq candidates (sort all-placeholder-names 'string-lessp))
+       (when candidates
+         (dolist (name candidates)
+           (setq name (downcase name))
+           (setq menu-list
+                 (append menu-list (list
+                                    (make-menu-item
+                                     :text name
+                                     :summary (oref
+                                               (lookup
+                                                else-Current-Language
+                                                name
+                                                t)
+                                               :description))))))
+         (setq matched-placeholder (else-display-menu menu-list)))
+       (when matched-placeholder
+         (case arg
+           (1  (insert (concat "[" matched-placeholder "]"))
+               (else-previous)
+               (else-expand))
+           (4  (insert (concat "[" matched-placeholder "]")))
+           (16 (insert (concat "{" matched-placeholder "}")))
+         )))
+     )))
 
 (defun else-load-template (&optional language-template-name)
   "Load a template file into the Template library."
