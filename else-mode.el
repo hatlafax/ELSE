@@ -233,17 +233,20 @@ and a list of active substitution regions."
                                        (auto-sub-origin-markers else-Auto-Sub-Markers))))))
           (setf (auto-sub-active-count else-Auto-Sub-Markers) 0))))))
 
-(defun else-create-potential-completion-list ()
-  "List of all placeholder names in the language set that are NONTERMINAL."
-  (let ((names nil)
-        (names-to-remove nil))
-    (setq names (get-names else-Current-Language))
-    (dolist (name names)
-      (when (else-terminal-placeholder-p (lookup else-Current-Language name t))
-        (setq names-to-remove (push name names-to-remove))))
-    (dolist (name names-to-remove)
-      (setq names (delete name names)))
-    names))
+(defun else-create-potential-completion-list (&optional all)
+  "List of all placeholder names in the language set that are NONTERMINAL.
+
+If optional argument ALL is nil, then terminal placeholders are filtered.
+"
+  (let ((names (get-names else-Current-Language))
+        (result nil))
+    (if all
+        names
+      (progn
+        (dolist (name names)
+          (unless (else-terminal-placeholder-p (lookup else-Current-Language name t))
+           (push name result))))
+      result)))
 
 (defun else-deactivate-mode ()
   "Turn off ELSE Mode."
@@ -686,11 +689,16 @@ If it is called with prefix-argument C-u C-u, then '{placeholder}' is inserted i
    (let ((all-placeholder-names nil)
          (matched-placeholder nil)
          (candidates nil)
-         (menu-list nil))
-     ;; get all of the placeholder names, but filter out any placeholders that
-     ;; are TERMINAL i.e. it is pointless to expand a TERMINAL placeholder (at
-     ;; least as an abbreviation)
-     (setq all-placeholder-names (get-names else-Current-Language))
+         (menu-list nil)
+         (without-terminals nil))
+
+     (case arg
+       (4  (setq without-terminals t))
+       (16 (setq without-terminals t))
+       )
+
+     (setq all-placeholder-names (else-create-potential-completion-list without-terminals))
+
      (let ((completion-ignore-case t))
        (setq candidates (sort all-placeholder-names 'string-lessp))
        (when candidates
