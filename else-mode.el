@@ -692,7 +692,7 @@ If it is called with prefix-argument C-u C-u, then '{placeholder}' is inserted i
          (menu-list nil)
          (without-terminals nil))
 
-     (case arg
+     (cl-case arg
        (4  (setq without-terminals t))
        (16 (setq without-terminals t))
        )
@@ -716,7 +716,7 @@ If it is called with prefix-argument C-u C-u, then '{placeholder}' is inserted i
                                                :description))))))
          (setq matched-placeholder (else-display-menu menu-list)))
        (when matched-placeholder
-         (case arg
+         (cl-case arg
            (1  (insert (concat "[" matched-placeholder "]"))
                (else-previous)
                (else-expand))
