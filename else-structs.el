@@ -529,11 +529,11 @@ Contains all of the template languages for this edit session.")
           (while (not (eq (token-type this-token) 'end-file))
             (setq this-token (get-token the-lexer))
             (cl-case (token-type this-token)
-              ('define-placeholder
+              ((define-placeholder quote)
                 (push-back-token the-lexer this-token)
                 (setq languages-changed (push (else-define-placeholder the-lexer) languages-changed)))
 
-              ('delete-placeholder
+              ((delete-placeholder quote)
                (setq previous-value (token-value this-token))
                (setq this-token (get-token the-lexer))
                (unless (eq (token-type this-token) 'language)
@@ -542,11 +542,11 @@ Contains all of the template languages for this edit session.")
                (delete-element (access-language else-Language-Repository (token-value this-token)) previous-value)
                (setq languages-changed (push (token-value this-token) languages-changed)))
 
-              ('define-language
+              ((define-language quote)
                 (push-back-token the-lexer this-token)
                 (else-define-language the-lexer))
 
-              ('delete-language
+              ((delete-language quote)
                (delete-language else-Language-Repository (else-strip-quotes (token-value this-token)))))))
 
       ((else-compile-error)
@@ -577,20 +577,20 @@ Contains all of the template languages for this edit session.")
       (setq type (token-type this-token)
             value (token-value this-token))
       (cl-case type
-        ('define-language
+        ((define-language quote)
           (oset this-language :name (else-strip-quotes value)))
-        ('initial-string
+        ((initial-string quote)
          (oset this-language :initial-string value))
-        ('punctuation-characters
+        ((punctuation-characters quote)
          (dotimes (index (length value))
            (set-char-table-range (oref this-language :punctuation-characters)
                                  (aref value index)
                                  t)))
-        ('valid-identifier-characters
+        ((valid-identifier-characters quote)
          (oset this-language :valid-identifier-characters value))
-        ('indent-size
+        ((indent-size quote)
          (oset this-language :tab-size (string-to-number value)))
-        ('version
+        ((version quote)
          (oset this-language :version value)))
       (setq this-token (get-token the-lexer)))
     ;; note: it is legal to (re)define a language in order to change the
@@ -632,44 +632,44 @@ Contains all of the template languages for this edit session.")
       (setq type (token-type this-token)
             value (token-value this-token))
       (cl-case type
-        ('language
+        ((language quote)
          (setq this-language (access-language else-Language-Repository value)
                language-name value)
          (unless this-language
            (signal 'else-compile-error (list (format "Language %s has not been defined yet - aborting" value)
                                              (current-buffer)))))
 
-        ('noauto-substitute
+        ((noauto-substitute quote)
          (setq substitution type))
 
-        ('auto-substitute
+        ((auto-substitute quote)
          (setq substitution type))
 
-        ('substitution-count
+        ((substitution-count quote)
          (setq sub-count (string-to-number value)))
 
-        ('description
+        ((description quote)
          (setq description value))
 
-        ('duplication
+        ((duplication quote)
          (setq duplication value))
 
-        ('separator
+        ((separator quote)
          (setq separator value))
 
-        ('before-action
+        ((before-action quote)
          (setq before-act value))
 
-        ('after-action
+        ((after-action quote)
          (setq after-act value))
 
-        ('transform-action
+        ((transform-action quote)
          (setq transform-act value))
 
-        ('type
+        ((type quote)
          (push-back-token the-lexer this-token)
          (cl-case value
-           ('nonterminal
+           ((nonterminal quote)
             (setq this-placeholder (make-instance 'else-non-terminal-placeholder
                                                   :name placeholder-name
                                                   :language-name language-name
@@ -685,7 +685,7 @@ Contains all of the template languages for this edit session.")
                                                   :definition-line-number definition-line-no))
             (setq this-placeholder (else-scan-non-terminal-body the-lexer this-placeholder (oref this-language :tab-size))))
 
-           ('terminal
+           ((terminal quote)
             (setq this-placeholder (make-instance 'else-terminal-placeholder
                                                   :name placeholder-name
                                                   :language-name language-name
@@ -701,7 +701,7 @@ Contains all of the template languages for this edit session.")
                                                   :definition-line-number definition-line-no))
             (setq this-placeholder (else-scan-terminal-body the-lexer this-placeholder)))
 
-           ('menu
+           ((menu quote)
             (setq this-placeholder (make-instance 'else-menu-placeholder
                                                   :name placeholder-name
                                                   :language-name language-name
@@ -717,7 +717,7 @@ Contains all of the template languages for this edit session.")
                                                   :definition-line-number definition-line-no))
             (setq this-placeholder (else-scan-menu-body the-lexer this-placeholder)))))
 
-        ('placeholder
+        ((placeholder quote)
          (setq this-placeholder (make-instance 'else-non-terminal-placeholder
                                                :name placeholder-name
                                                :language-name language-name

@@ -85,9 +85,9 @@
       (newline)
       (indent-to indent-column)
       (insert (format "/DUPLICATION=%s" (cl-case (oref obj :duplication)
-                                          ('context-dependent "CONTEXT_DEPENDENT")
-                                          ('vertical "VERTICAL")
-                                          ('horizontal "HORIZONTAL"))))
+                                          ((context-dependent quote) "CONTEXT_DEPENDENT")
+                                          ((vertical quote) "VERTICAL")
+                                          ((horizontal quote) "HORIZONTAL"))))
       (newline)
       (indent-to indent-column)
       (insert (format "/SEPARATOR=\"%s\"" (oref obj :separator)))
@@ -148,14 +148,14 @@
       (indent-to indent-column)
       (insert (format "\"%s\"" (menu-entry-text this-line)))
       (cl-case (menu-entry-type this-line)
-        ('placeholder
+        ((placeholder quote)
          (insert "/PLACEHOLDER")
          (cl-case (menu-entry-follow this-line)
-           ('follow (insert "/FOLLOW"))
-           ('nofollow (insert "/NOFOLLOW"))
+           ((follow quote) (insert "/FOLLOW"))
+           ((nofollow quote) (insert "/NOFOLLOW"))
            ;; If the follow value was not ORGINALLY specified in the language
            ;; file then leave it blank (defaults to the global value)
-           ('follow-not-specified nil))))
+           ((follow-not-specified quote) nil))))
       (when (> (length (menu-entry-description this-line)) 0)
         (insert (format "/DESCRIPTION=\"%s\"" (menu-entry-description this-line)))))
     (newline)
@@ -369,15 +369,15 @@ found)"
           (dolist (element this-token)
             (setq type-of-token (token-type element))
             (cl-case type-of-token
-              ('text
+              ((text quote)
                (setq text (token-value element)))
-              ('follow
+              ((follow quote)
                (setq follow type-of-token))
-              ('nofollow
+              ((nofollow quote)
                (setq follow type-of-token))
-              ('placeholder
+              ((placeholder quote)
                (setq type type-of-token))
-              ('description
+              ((description quote)
                (setq description (token-value element)))
               (t
                (signal 'else-compile-error (list "Unpected error scanning menu body" (current-buffer)))))))
